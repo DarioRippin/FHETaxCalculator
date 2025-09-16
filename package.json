@@ -1,0 +1,61 @@
+{
+  "name": "privacy-tax-calculator",
+  "version": "1.0.0",
+  "description": "Privacy Tax Calculator - Confidential tax processing using FHE technology",
+  "main": "index.html",
+  "type": "module",
+  "homepage": "https://privacy-tax-calculator.vercel.app",
+  "scripts": {
+    "build": "npm run build:assets && npm run build:optimize",
+    "build:assets": "node scripts/build.cjs",
+    "build:optimize": "node scripts/optimize.cjs",
+    "dev": "http-server . -p 3000 -o --cors",
+    "start": "http-server public -p 8080 -o",
+    "preview": "http-server public -p 4173 -o",
+    "deploy": "npm run build && vercel --prod",
+    "clean": "rimraf public"
+  },
+  "keywords": [
+    "privacy",
+    "tax",
+    "calculator",
+    "fhe",
+    "blockchain",
+    "web3",
+    "ethereum",
+    "vercel"
+  ],
+  "author": {
+    "name": "Privacy Tax Calculator Team",
+    "url": "https://privacy-tax-calculator.vercel.app"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ],
+  "dependencies": {
+    "ethers": "^6.13.0"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "rimraf": "^5.0.10",
+    "terser": "^5.44.0"
+  },
+  "files": [
+    "index.html",
+    "app.js", 
+    "styles.css",
+    "contracts/",
+    "favicon.ico",
+    "public/",
+    "scripts/",
+    "assets/"
+  ]
+}

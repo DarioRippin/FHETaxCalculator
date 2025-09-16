@@ -1,0 +1,16 @@
+{
+  "name": "Privacy Tax Calculator",
+  "short_name": "TaxCalc",
+  "description": "Privacy-preserving tax calculation using blockchain technology",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#4a90e2",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}

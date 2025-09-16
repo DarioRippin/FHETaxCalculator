@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Tax Calculator - Confidential Tax Processing</title>
+    <meta name="description" content="Secure, private tax calculation using FHE technology. Calculate your taxes without revealing your financial data.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Background Elements -->
+    <div class="bg-grid"></div>
+    <div class="bg-gradient"></div>
+    
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <img src="assets/zama-logo.png" alt="Zama Logo" class="logo" />
+                    <div class="logo-text">
+                        <h1 class="brand-name">Privacy Tax Calculator</h1>
+                        <p class="brand-subtitle">Confidential Tax Processing with FHE</p>
+                    </div>
+                </div>
+                
+                <!-- Wallet Connection -->
+                <div class="wallet-section">
+                    <button class="wallet-btn" id="connectBtn" onclick="connectWallet()">
+                        <i class="fas fa-wallet"></i>
+                        <span>Connect Wallet</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            
+            <!-- Status Cards -->
+            <div class="status-grid">
+                <!-- Network Status Card -->
+                <div class="status-card network-card">
+                    <div class="card-header">
+                        <i class="fas fa-network-wired"></i>
+                        <h3>Network Status</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="status-item">
+                            <span class="label">Network:</span>
+                            <span class="value" id="networkStatus">Not Connected</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">Account:</span>
+                            <span class="value mono" id="accountAddress">Not Connected</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">Balance:</span>
+                            <span class="value" id="accountBalance">0 ETH</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tax Status Card -->
+                <div class="status-card tax-card" id="taxStatus" style="display: none;">
+                    <div class="card-header">
+                        <i class="fas fa-shield-alt"></i>
+                        <h3>Tax Status</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="status-item">
+                            <span class="label">Status:</span>
+                            <span class="value" id="statusMessage">Ready for submission</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">Last Tx:</span>
+                            <span class="value mono" id="lastTxHash">None</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contract Stats Card -->
+                <div class="status-card stats-card" id="contractStats" style="display: none;">
+                    <div class="card-header">
+                        <i class="fas fa-chart-bar"></i>
+                        <h3>Contract Statistics</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="status-item">
+                            <span class="label">Total Users:</span>
+                            <span class="value" id="totalTaxpayers">0</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">Version:</span>
+                            <span class="value" id="contractVersion">1</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">Owner:</span>
+                            <span class="value mono small" id="contractOwner">Loading...</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">Deployed:</span>
+                            <span class="value" id="deploymentTime">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Section -->
+            <section class="features-section">
+                <div class="section-header">
+                    <h2>Why Choose Privacy Tax Calculator?</h2>
+                    <p>Your financial privacy matters. Our advanced FHE technology ensures complete confidentiality.</p>
+                </div>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <h3>Fully Encrypted</h3>
+                        <p>All calculations performed on encrypted data using Fully Homomorphic Encryption</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-eye-slash"></i>
+                        </div>
+                        <h3>Zero Knowledge</h3>
+                        <p>No one can see your actual income, deductions, or tax calculations</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-check"></i>
+                        </div>
+                        <h3>Blockchain Verified</h3>
+                        <p>All operations are recorded on Sepolia blockchain for transparency</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        <h3>Progressive Rates</h3>
+                        <p>Accurate tax calculation with 10%, 20%, and 30% progressive brackets</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tax Calculator Section -->
+            <section class="calculator-section">
+                <div class="calculator-container">
+                    <div class="calculator-header">
+                        <h2>Calculate Your Taxes Privately</h2>
+                        <p>Select a scenario or enter custom amounts. All data remains encrypted.</p>
+                    </div>
+
+                    <!-- Alert/Message Display -->
+                    <div class="alert-container" id="messageBox" style="display: none;">
+                        <div class="alert" id="alertContent">
+                            <i class="alert-icon fas fa-info-circle"></i>
+                            <span class="alert-text" id="statusText"></span>
+                            <button class="alert-close" onclick="document.getElementById('messageBox').style.display='none'">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Transaction Monitor -->
+                    <div class="transaction-monitor" id="transactionMonitor" style="display: none;">
+                        <div class="monitor-header">
+                            <i class="fas fa-satellite-dish"></i>
+                            <h3>Transaction Monitor</h3>
+                        </div>
+                        <div class="monitor-content">
+                            <div class="monitor-item">
+                                <span class="label">Hash:</span>
+                                <span class="value mono" id="txHash">Pending...</span>
+                            </div>
+                            <div class="monitor-item">
+                                <span class="label">Status:</span>
+                                <span class="value" id="txStatus">Confirming...</span>
+                            </div>
+                            <div class="monitor-item">
+                                <span class="label">Gas Used:</span>
+                                <span class="value" id="gasUsed">Calculating...</span>
+                            </div>
+                            <div class="monitor-item">
+                                <span class="label">Block:</span>
+                                <span class="value" id="blockNumber">Pending...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tax Scenarios -->
+                    <div class="scenarios-section" id="scenarioSection" style="display: none;">
+                        <h3>Choose Tax Scenario</h3>
+                        <div class="scenarios-grid">
+                            <div class="scenario-card" onclick="selectScenario('low')">
+                                <div class="scenario-icon">
+                                    <i class="fas fa-seedling"></i>
+                                </div>
+                                <h4>Low Income</h4>
+                                <div class="scenario-details">
+                                    <p><strong>Income:</strong> $30,000</p>
+                                    <p><strong>Deductions:</strong> $5,000</p>
+                                    <p class="expected-rate">Expected Rate: ~8%</p>
+                                </div>
+                            </div>
+                            
+                            <div class="scenario-card" onclick="selectScenario('medium')">
+                                <div class="scenario-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h4>Medium Income</h4>
+                                <div class="scenario-details">
+                                    <p><strong>Income:</strong> $75,000</p>
+                                    <p><strong>Deductions:</strong> $12,000</p>
+                                    <p class="expected-rate">Expected Rate: ~16%</p>
+                                </div>
+                            </div>
+                            
+                            <div class="scenario-card" onclick="selectScenario('high')">
+                                <div class="scenario-icon">
+                                    <i class="fas fa-crown"></i>
+                                </div>
+                                <h4>High Income</h4>
+                                <div class="scenario-details">
+                                    <p><strong>Income:</strong> $150,000</p>
+                                    <p><strong>Deductions:</strong> $25,000</p>
+                                    <p class="expected-rate">Expected Rate: ~22%</p>
+                                </div>
+                            </div>
+                            
+                            <div class="scenario-card" onclick="selectScenario('custom')">
+                                <div class="scenario-icon">
+                                    <i class="fas fa-edit"></i>
+                                </div>
+                                <h4>Custom Amount</h4>
+                                <div class="scenario-details">
+                                    <p><strong>Enter your own</strong></p>
+                                    <p><strong>values below</strong></p>
+                                    <p class="expected-rate">Variable Rate</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Custom Input Form -->
+                    <div class="custom-inputs" id="taxInputs" style="display: none;">
+                        <h3>Enter Your Tax Information</h3>
+                        <div class="input-grid">
+                            <div class="input-group">
+                                <label for="incomeInput">
+                                    <i class="fas fa-dollar-sign"></i>
+                                    Annual Income (USD)
+                                </label>
+                                <input
+                                    type="number"
+                                    id="incomeInput"
+                                    placeholder="Enter your annual income"
+                                    step="1000"
+                                    min="0"
+                                    class="custom-input"
+                                />
+                            </div>
+                            <div class="input-group">
+                                <label for="deductionsInput">
+                                    <i class="fas fa-receipt"></i>
+                                    Total Deductions (USD)
+                                </label>
+                                <input
+                                    type="number"
+                                    id="deductionsInput"
+                                    placeholder="Enter your total deductions"
+                                    step="100"
+                                    min="0"
+                                    class="custom-input"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selected Scenario Display -->
+                    <div class="selected-scenario" id="selectedScenario" style="display: none;">
+                        <div class="scenario-summary">
+                            <h3>Tax Calculation Summary</h3>
+                            <div class="summary-grid">
+                                <div class="summary-item">
+                                    <span class="label">Income:</span>
+                                    <span class="value" id="displayIncome">$0</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="label">Deductions:</span>
+                                    <span class="value" id="displayDeductions">$0</span>
+                                </div>
+                                <div class="summary-item estimated">
+                                    <span class="label">Estimated Tax:</span>
+                                    <span class="value" id="estimatedTax">$0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="actions-section">
+                        <div class="actions-grid">
+                            <button class="action-btn primary" id="submitBtn" onclick="submitTaxInfo()" style="display: none;">
+                                <i class="fas fa-upload"></i>
+                                <span>Submit Tax Info</span>
+                            </button>
+                            
+                            <button class="action-btn secondary" id="calculateBtn" onclick="calculateTax()" style="display: none;">
+                                <i class="fas fa-calculator"></i>
+                                <span>Calculate Tax</span>
+                            </button>
+                            
+                            <button class="action-btn accent" id="viewBtn" onclick="viewTaxResult()" style="display: none;">
+                                <i class="fas fa-eye"></i>
+                                <span>View Result</span>
+                            </button>
+                            
+                            <button class="action-btn danger" id="clearBtn" onclick="clearTaxRecord()" style="display: none;">
+                                <i class="fas fa-trash"></i>
+                                <span>Clear Record</span>
+                            </button>
+                            
+                            <button class="action-btn outline" id="refreshBtn" onclick="refreshContractStats()" style="display: none;">
+                                <i class="fas fa-sync"></i>
+                                <span>Refresh Stats</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <p><i class="fas fa-shield-alt"></i> Your privacy is protected by advanced FHE encryption</p>
+                    <p><i class="fas fa-link"></i> Powered by Zama FHEVM on Sepolia Testnet</p>
+                </div>
+                <div class="footer-links">
+                    <a href="#" class="footer-link">Privacy Policy</a>
+                    <a href="#" class="footer-link">Documentation</a>
+                    <a href="#" class="footer-link">Support</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.15.0/dist/ethers.umd.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
