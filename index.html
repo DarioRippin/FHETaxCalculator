@@ -19,7 +19,9 @@
         <div class="container">
             <div class="header-content">
                 <div class="logo-section">
-                    <img src="assets/zama-logo.png" alt="Zama Logo" class="logo" />
+                    <div class="logo-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
                     <div class="logo-text">
                         <h1 class="brand-name">Privacy Tax Calculator</h1>
                         <p class="brand-subtitle">Confidential Tax Processing with FHE</p>
@@ -193,8 +195,22 @@
                         </div>
                     </div>
 
+                    <!-- Tax Result Display -->
+                    <div class="tax-result-display" id="taxResultDisplay" style="display: none;">
+                        <div class="result-header">
+                            <i class="fas fa-receipt"></i>
+                            <h3>Tax Calculation Result</h3>
+                            <button class="result-close" onclick="document.getElementById('taxResultDisplay').style.display='none'">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="result-content" id="taxResultContent">
+                            <!-- Result content will be inserted here -->
+                        </div>
+                    </div>
+
                     <!-- Tax Scenarios -->
-                    <div class="scenarios-section" id="scenarioSection" style="display: none;">
+                    <div class="scenarios-section" id="scenarioSection">
                         <h3>Choose Tax Scenario</h3>
                         <div class="scenarios-grid">
                             <div class="scenario-card" onclick="selectScenario('low')">
@@ -306,29 +322,34 @@
                     <!-- Action Buttons -->
                     <div class="actions-section">
                         <div class="actions-grid">
-                            <button class="action-btn primary" id="submitBtn" onclick="submitTaxInfo()" style="display: none;">
+                            <button class="action-btn primary" id="submitBtn" onclick="submitTaxInfo()">
                                 <i class="fas fa-upload"></i>
                                 <span>Submit Tax Info</span>
                             </button>
                             
-                            <button class="action-btn secondary" id="calculateBtn" onclick="calculateTax()" style="display: none;">
+                            <button class="action-btn secondary" id="calculateBtn" onclick="calculateTax()">
                                 <i class="fas fa-calculator"></i>
                                 <span>Calculate Tax</span>
                             </button>
                             
-                            <button class="action-btn accent" id="viewBtn" onclick="viewTaxResult()" style="display: none;">
+                            <button class="action-btn accent" id="viewBtn" onclick="viewTaxResult()">
                                 <i class="fas fa-eye"></i>
                                 <span>View Result</span>
                             </button>
                             
-                            <button class="action-btn danger" id="clearBtn" onclick="clearTaxRecord()" style="display: none;">
+                            <button class="action-btn danger" id="clearBtn" onclick="clearTaxRecord()">
                                 <i class="fas fa-trash"></i>
                                 <span>Clear Record</span>
                             </button>
                             
-                            <button class="action-btn outline" id="refreshBtn" onclick="refreshContractStats()" style="display: none;">
+                            <button class="action-btn outline" id="refreshBtn" onclick="refreshContractStats()" style="display: inline-block;">
                                 <i class="fas fa-sync"></i>
                                 <span>Refresh Stats</span>
+                            </button>
+                            
+                            <button class="action-btn outline" onclick="testFunction()">
+                                <i class="fas fa-bug"></i>
+                                <span>Test Function</span>
                             </button>
                         </div>
                     </div>

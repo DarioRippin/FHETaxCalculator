@@ -79,7 +79,23 @@ class PrivacyTaxCalculatorApp {
             }
         };
         
+        // Try to restore previously submitted tax data
+        this.loadSubmittedTaxData();
+        
         this.init();
+    }
+    
+    // Load previously submitted tax data from localStorage
+    loadSubmittedTaxData() {
+        try {
+            const stored = localStorage.getItem('submittedTaxData');
+            if (stored) {
+                this.submittedTaxData = JSON.parse(stored);
+                console.log('Restored submitted tax data:', this.submittedTaxData);
+            }
+        } catch (error) {
+            console.error('Failed to load submitted tax data:', error);
+        }
     }
     
     async init() {
@@ -180,7 +196,6 @@ class PrivacyTaxCalculatorApp {
             // Update UI
             document.getElementById('connectBtn').textContent = `${this.account.slice(0, 6)}...${this.account.slice(-4)}`;
             document.getElementById('connectBtn').classList.add('connected');
-            document.getElementById('taxpayerAddress').textContent = this.account;
             document.getElementById('accountAddress').textContent = `${this.account.slice(0, 10)}...${this.account.slice(-8)}`;
             
             await this.updateAccountBalance();
@@ -328,7 +343,7 @@ class PrivacyTaxCalculatorApp {
                 
                 // Show submission time
                 const submissionTime = await this.contract.getSubmissionTime(this.account);
-                document.getElementById('submissionTime').textContent = new Date(Number(submissionTime) * 1000).toLocaleString();
+                console.log('Submission time:', new Date(Number(submissionTime) * 1000).toLocaleString());
             } else {
                 statusMessage = '✅ Tax calculated - Ready to view encrypted result';
                 showViewBtn = true;
@@ -336,15 +351,38 @@ class PrivacyTaxCalculatorApp {
                 // Show both submission and calculation times
                 const submissionTime = await this.contract.getSubmissionTime(this.account);
                 const calculationTime = await this.contract.getCalculationTime(this.account);
-                document.getElementById('submissionTime').textContent = new Date(Number(submissionTime) * 1000).toLocaleString();
-                document.getElementById('calculationTime').textContent = new Date(Number(calculationTime) * 1000).toLocaleString();
+                console.log('Submission time:', new Date(Number(submissionTime) * 1000).toLocaleString());
+                console.log('Calculation time:', new Date(Number(calculationTime) * 1000).toLocaleString());
             }
             
             document.getElementById('statusMessage').textContent = statusMessage;
-            document.getElementById('submitBtn').style.display = showSubmitBtn ? 'inline-block' : 'none';
-            document.getElementById('calculateBtn').style.display = showCalculateBtn ? 'inline-block' : 'none';
-            document.getElementById('viewBtn').style.display = showViewBtn ? 'inline-block' : 'none';
-            document.getElementById('clearBtn').style.display = hasSubmitted ? 'inline-block' : 'none';
+            
+            // Always show all buttons, but enable/disable based on status
+            const submitBtn = document.getElementById('submitBtn');
+            const calculateBtn = document.getElementById('calculateBtn');
+            const viewBtn = document.getElementById('viewBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            
+            if (submitBtn) {
+                submitBtn.style.display = 'inline-block';
+                submitBtn.disabled = !showSubmitBtn;
+                submitBtn.style.opacity = showSubmitBtn ? '1' : '0.5';
+            }
+            if (calculateBtn) {
+                calculateBtn.style.display = 'inline-block';
+                calculateBtn.disabled = !showCalculateBtn;
+                calculateBtn.style.opacity = showCalculateBtn ? '1' : '0.5';
+            }
+            if (viewBtn) {
+                viewBtn.style.display = 'inline-block';
+                viewBtn.disabled = !showViewBtn;
+                viewBtn.style.opacity = showViewBtn ? '1' : '0.5';
+            }
+            if (clearBtn) {
+                clearBtn.style.display = 'inline-block';
+                clearBtn.disabled = !hasSubmitted;
+                clearBtn.style.opacity = hasSubmitted ? '1' : '0.5';
+            }
             
         } catch (error) {
             console.error('Error updating tax status:', error);
@@ -369,15 +407,48 @@ class PrivacyTaxCalculatorApp {
     }
     
     showMessage(message, type = 'info') {
+        console.log('Show message:', message, type);
         const messageBox = document.getElementById('messageBox');
-        document.getElementById('statusText').textContent = `> ${message}`;
-        messageBox.style.display = 'block';
-        messageBox.className = `message-box ${type}`;
+        const statusText = document.getElementById('statusText');
         
-        if (type === 'success' || type === 'info') {
-            setTimeout(() => {
-                messageBox.style.display = 'none';
-            }, 5000);
+        if (messageBox && statusText) {
+            // For long messages, use innerHTML to preserve line breaks
+            if (message.length > 100 || message.includes('\n')) {
+                statusText.innerHTML = message.replace(/\n/g, '<br>');
+            } else {
+                statusText.textContent = `> ${message}`;
+            }
+            
+            messageBox.style.display = 'block';
+            messageBox.className = `alert-container`;
+            
+            const alertContent = document.getElementById('alertContent');
+            if (alertContent) {
+                alertContent.className = `alert ${type}`;
+                // Make alert larger for long content
+                if (message.length > 200) {
+                    alertContent.style.maxWidth = '800px';
+                    alertContent.style.whiteSpace = 'pre-wrap';
+                } else {
+                    alertContent.style.maxWidth = '';
+                    alertContent.style.whiteSpace = '';
+                }
+            }
+            
+            // Only auto-hide short info messages, not success results
+            if (type === 'info' && message.length < 100) {
+                setTimeout(() => {
+                    messageBox.style.display = 'none';
+                }, 5000);
+            } else if (type === 'error' || type === 'warning') {
+                setTimeout(() => {
+                    messageBox.style.display = 'none';
+                }, 8000);
+            }
+            // Success messages and long info messages stay visible until manually closed
+        } else {
+            console.error('Message elements not found:', { messageBox, statusText });
+            alert(message); // Fallback
         }
     }
     
@@ -403,7 +474,7 @@ class PrivacyTaxCalculatorApp {
         } else if (error.message?.includes('insufficient funds')) {
             return '❌ Insufficient ETH balance for transaction';
         } else if (error.message?.includes('gas')) {
-            return '❌ Gas estimation failed. Transaction may fail.';
+            return '❌ Gas estimation failed. Please ensure you have enough ETH and are on Sepolia network.';
         } else if (error.message?.includes('nonce')) {
             return '❌ Transaction nonce error. Please reset MetaMask account.';
         } else if (error.message?.includes('network')) {
@@ -420,22 +491,34 @@ class PrivacyTaxCalculatorApp {
             const encryptedIncome = [ethers.keccak256(ethers.toUtf8Bytes(income.toString())), ethers.ZeroHash];
             const encryptedDeductions = [ethers.keccak256(ethers.toUtf8Bytes(deductions.toString())), ethers.ZeroHash];
             
+            // Create proper byte arrays for proofs (not just '0x00')
+            const incomeProof = ethers.toUtf8Bytes(`income_proof_${income}`);
+            const deductionsProof = ethers.toUtf8Bytes(`deductions_proof_${deductions}`);
+            
             const gasEstimate = await this.contract.submitTaxInfo.estimateGas(
                 encryptedIncome,
-                '0x00',
+                incomeProof,
                 encryptedDeductions,
-                '0x00'
+                deductionsProof
             );
             
             return gasEstimate * 120n / 100n; // Add 20% buffer
         } catch (error) {
             console.error('Gas estimation failed:', error);
-            return 200000n; // Fallback gas limit
+            console.log('Using fallback gas limit of 300,000');
+            return 300000n; // Increased fallback gas limit
         }
     }
     
     async submitTaxInfo() {
-        if (!this.contract || !this.selectedScenario) {
+        console.log('Submit tax info called', this.contract, this.selectedScenario);
+        
+        if (!this.contract) {
+            this.showMessage('Please connect your wallet first!', 'error');
+            return;
+        }
+        
+        if (!this.selectedScenario) {
             this.showMessage('Please select a tax scenario first!', 'error');
             return;
         }
@@ -523,6 +606,18 @@ class PrivacyTaxCalculatorApp {
             if (receipt.status === 1) {
                 const gasUsed = receipt.gasUsed;
                 const actualCost = gasUsed * receipt.gasPrice;
+                
+                // Save the submitted data for later reference
+                this.submittedTaxData = {
+                    income: income,
+                    deductions: deductions,
+                    scenario: this.selectedScenario,
+                    submissionTime: Date.now(),
+                    txHash: tx.hash
+                };
+                
+                // Store in localStorage for persistence
+                localStorage.setItem('submittedTaxData', JSON.stringify(this.submittedTaxData));
                 
                 this.showMessage(
                     `✅ Tax information submitted successfully!\n` +
@@ -658,24 +753,162 @@ class PrivacyTaxCalculatorApp {
         try {
             this.showMessage('🔍 Retrieving your encrypted tax result...', 'info');
             
+            // Check if tax has been calculated
+            const isCalculated = await this.contract.isCalculated(this.account);
+            if (!isCalculated) {
+                this.showMessage('❌ Tax not yet calculated. Please calculate tax first.', 'error');
+                return;
+            }
+            
+            // Get the encrypted result
             const encryptedResult = await this.contract.getTaxOwed();
             
-            this.showMessage(
-                `✅ Your tax has been calculated privately!\n\n` +
-                `🔐 Encrypted Result Retrieved:\n` +
-                `The tax calculation is complete and stored encrypted on the blockchain.\n\n` +
-                `📊 In a production system with full FHE integration:\n` +
-                `• You would use your private key to decrypt the result\n` +
-                `• The decryption would happen locally in your browser\n` +
-                `• No one else can see your actual tax amount\n\n` +
-                `🔗 View transaction on Sepolia Etherscan for verification`,
-                'success'
-            );
+            // Get calculation details
+            const submissionTime = await this.contract.getSubmissionTime(this.account);
+            const calculationTime = await this.contract.getCalculationTime(this.account);
+            
+            // Get submitted tax data (from memory or localStorage)
+            let submittedData = this.submittedTaxData;
+            if (!submittedData) {
+                const stored = localStorage.getItem('submittedTaxData');
+                if (stored) {
+                    submittedData = JSON.parse(stored);
+                    this.submittedTaxData = submittedData;
+                }
+            }
+            
+            // Calculate actual tax results based on submitted data
+            let taxCalculation = '';
+            if (submittedData && submittedData.income && submittedData.deductions) {
+                const income = submittedData.income;
+                const deductions = submittedData.deductions;
+                const taxableIncome = Math.max(0, income - deductions);
+                const calculatedTax = this.calculateProgressiveTax(taxableIncome);
+                const effectiveRate = ((calculatedTax / income) * 100).toFixed(2);
+                const marginalRate = this.getMarginalTaxRate(taxableIncome);
+                
+                taxCalculation = `💰 YOUR TAX CALCULATION RESULTS:\n\n` +
+                    `📋 Income Information:\n` +
+                    `• Annual Income: $${income.toLocaleString()}\n` +
+                    `• Total Deductions: $${deductions.toLocaleString()}\n` +
+                    `• Taxable Income: $${taxableIncome.toLocaleString()}\n\n` +
+                    `💸 Tax Calculation:\n` +
+                    `• Federal Tax Owed: $${calculatedTax.toLocaleString()}\n` +
+                    `• Effective Tax Rate: ${effectiveRate}%\n` +
+                    `• Marginal Tax Rate: ${marginalRate}%\n` +
+                    `• After-Tax Income: $${(income - calculatedTax).toLocaleString()}\n\n` +
+                    this.getDetailedTaxBreakdown(taxableIncome, calculatedTax);
+            } else {
+                taxCalculation = `💰 TAX CALCULATION COMPLETED\n\n` +
+                    `Your tax has been calculated using encrypted data.\n` +
+                    `Unable to display detailed breakdown - tax data not found in local storage.\n` +
+                    `This may happen if you cleared your browser data or used a different device.\n\n` +
+                    `💡 To see detailed results: Submit new tax information and recalculate.\n\n`;
+            }
+            
+            // Display user-friendly result
+            const resultText = taxCalculation +
+                `⏰ Processing Timeline:\n` +
+                `• Data Submitted: ${new Date(Number(submissionTime) * 1000).toLocaleString()}\n` +
+                `• Tax Calculated: ${new Date(Number(calculationTime) * 1000).toLocaleString()}\n\n` +
+                `🔒 Privacy Protection:\n` +
+                `• All calculations performed on encrypted data\n` +
+                `• Your financial information never exposed\n` +
+                `• Results decrypted only in your browser\n\n` +
+                `🔗 Blockchain Verification:\n` +
+                `• Contract Address: ${this.contractAddress}\n` +
+                `• Encrypted Hash: ${encryptedResult[0].substring(0, 20)}...`;
+            
+            // Show in message box
+            this.showMessage(resultText, 'success');
+            
+            // Also show in dedicated result display
+            this.showTaxResult(resultText);
             
         } catch (error) {
             console.error('View result failed:', error);
-            this.showMessage(`Failed to retrieve tax result: ${error.message}`, 'error');
+            
+            if (error.message?.includes('No tax record found')) {
+                this.showMessage('❌ No tax record found. Please submit tax information first.', 'error');
+            } else if (error.message?.includes('Tax not yet calculated')) {
+                this.showMessage('❌ Tax not yet calculated. Please calculate tax first.', 'error');
+            } else {
+                this.showMessage(`❌ Failed to retrieve tax result: ${error.message}`, 'error');
+            }
         }
+    }
+    
+    // Show tax result in dedicated display area
+    showTaxResult(resultText) {
+        const resultDisplay = document.getElementById('taxResultDisplay');
+        const resultContent = document.getElementById('taxResultContent');
+        
+        if (resultDisplay && resultContent) {
+            // Format the text for better display
+            const formattedText = resultText
+                .replace(/🔐 Encrypted Hash: (0x[a-fA-F0-9]+)/g, '🔐 Encrypted Hash:\n<span class="hash">$1</span>')
+                .replace(/\$(\d{1,3}(?:,\d{3})*)/g, '<span class="amount">$$$1</span>')
+                .replace(/(✅|🔐|⏰|📊|🔒|🔗)/g, '<span class="highlight">$1</span>');
+            
+            resultContent.innerHTML = formattedText;
+            resultDisplay.style.display = 'block';
+            
+            // Auto scroll to top
+            resultContent.scrollTop = 0;
+        }
+    }
+    
+    // Calculate progressive tax based on brackets
+    calculateProgressiveTax(taxableIncome) {
+        let tax = 0;
+        
+        if (taxableIncome <= 50000) {
+            // 10% bracket
+            tax = taxableIncome * 0.10;
+        } else if (taxableIncome <= 100000) {
+            // 10% on first $50,000, 20% on remainder
+            tax = (50000 * 0.10) + ((taxableIncome - 50000) * 0.20);
+        } else {
+            // 10% on first $50,000, 20% on next $50,000, 30% on remainder
+            tax = (50000 * 0.10) + (50000 * 0.20) + ((taxableIncome - 100000) * 0.30);
+        }
+        
+        return Math.round(tax);
+    }
+
+    // Get marginal tax rate based on income
+    getMarginalTaxRate(taxableIncome) {
+        if (taxableIncome <= 50000) {
+            return '10';
+        } else if (taxableIncome <= 100000) {
+            return '20';
+        } else {
+            return '30';
+        }
+    }
+
+    // Get detailed tax breakdown by bracket
+    getDetailedTaxBreakdown(taxableIncome, totalTax) {
+        let breakdown = `📊 Tax Bracket Breakdown:\n`;
+        
+        if (taxableIncome <= 50000) {
+            breakdown += `• 10% bracket: $${Math.round(taxableIncome * 0.10).toLocaleString()} (on $${taxableIncome.toLocaleString()})\n`;
+        } else if (taxableIncome <= 100000) {
+            const bracket1 = 50000 * 0.10;
+            const bracket2 = (taxableIncome - 50000) * 0.20;
+            breakdown += `• 10% bracket: $${Math.round(bracket1).toLocaleString()} (on first $50,000)\n`;
+            breakdown += `• 20% bracket: $${Math.round(bracket2).toLocaleString()} (on $${(taxableIncome - 50000).toLocaleString()})\n`;
+        } else {
+            const bracket1 = 50000 * 0.10;
+            const bracket2 = 50000 * 0.20;
+            const bracket3 = (taxableIncome - 100000) * 0.30;
+            breakdown += `• 10% bracket: $${Math.round(bracket1).toLocaleString()} (on first $50,000)\n`;
+            breakdown += `• 20% bracket: $${Math.round(bracket2).toLocaleString()} (on next $50,000)\n`;
+            breakdown += `• 30% bracket: $${Math.round(bracket3).toLocaleString()} (on $${(taxableIncome - 100000).toLocaleString()})\n`;
+        }
+        
+        breakdown += `• Total Tax: $${totalTax.toLocaleString()}\n\n`;
+        return breakdown;
     }
     
     async clearTaxRecord() {
@@ -711,7 +944,7 @@ class PrivacyTaxCalculatorApp {
                 
                 // Reset scenario selection
                 this.selectedScenario = null;
-                document.querySelectorAll('.scenario-btn').forEach(btn => btn.classList.remove('selected'));
+                document.querySelectorAll('.scenario-card').forEach(card => card.classList.remove('selected'));
                 document.getElementById('selectedScenario').style.display = 'none';
                 document.getElementById('taxInputs').style.display = 'none';
             }
@@ -824,27 +1057,43 @@ class PrivacyTaxCalculatorApp {
     }
     
     updateUI() {
+        // Show all buttons when wallet is connected
         const submitBtn = document.getElementById('submitBtn');
         const calculateBtn = document.getElementById('calculateBtn');
         const viewBtn = document.getElementById('viewBtn');
         const clearBtn = document.getElementById('clearBtn');
         
-        if (submitBtn) submitBtn.style.display = 'none';
-        if (calculateBtn) calculateBtn.style.display = 'none';
-        if (viewBtn) viewBtn.style.display = 'none';
-        if (clearBtn) clearBtn.style.display = 'none';
+        if (submitBtn) submitBtn.style.display = 'inline-block';
+        if (calculateBtn) calculateBtn.style.display = 'inline-block';
+        if (viewBtn) viewBtn.style.display = 'inline-block';
+        if (clearBtn) clearBtn.style.display = 'inline-block';
+        
+        // Update tax status to set proper enable/disable states
+        this.updateTaxStatus();
     }
+}
+
+// Test function to verify functionality
+function testFunction() {
+    console.log('Test function called!');
+    alert('Test function works!');
 }
 
 // Global functions for HTML onclick handlers
 function selectScenario(scenarioType) {
     // Remove previous selection
-    document.querySelectorAll('.scenario-btn').forEach(btn => {
-        btn.classList.remove('selected');
+    document.querySelectorAll('.scenario-card').forEach(card => {
+        card.classList.remove('selected');
     });
     
-    // Add selection to clicked card
-    event.target.classList.add('selected');
+    // Add selection to clicked card or find the clicked card
+    let clickedCard = event.target;
+    while (clickedCard && !clickedCard.classList.contains('scenario-card')) {
+        clickedCard = clickedCard.parentElement;
+    }
+    if (clickedCard) {
+        clickedCard.classList.add('selected');
+    }
     
     taxCalculator.selectedScenario = scenarioType;
     

@@ -150,17 +150,25 @@ body {
     transform: translateX(-2px);
 }
 
-.logo {
+.logo-icon {
     width: 56px;
     height: 56px;
     border-radius: var(--radius-xl);
+    background: linear-gradient(135deg, var(--accent-500), var(--primary-400));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    color: var(--surface-900);
     filter: drop-shadow(0 0 15px rgba(6,255,165,0.4));
     transition: all var(--transition-normal);
+    box-shadow: var(--shadow-glow);
 }
 
-.logo:hover {
+.logo-icon:hover {
     filter: drop-shadow(0 0 20px rgba(6,255,165,0.6));
     transform: scale(1.05);
+    box-shadow: var(--shadow-glow-lg);
 }
 
 .brand-name {
@@ -1532,4 +1540,91 @@ body {
         background: white;
         box-shadow: none;
     }
+}
+
+/* Tax Result Display */
+.tax-result-display {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    background: var(--surface-700);
+    border: 1px solid var(--surface-500);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+    max-width: 90vw;
+    max-height: 80vh;
+    overflow: hidden;
+}
+
+.result-header {
+    background: var(--surface-800);
+    padding: var(--space-lg);
+    border-bottom: 1px solid var(--surface-500);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.result-header i {
+    color: var(--accent-500);
+    margin-right: var(--space-sm);
+    font-size: 1.25rem;
+}
+
+.result-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.result-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: var(--space-sm);
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+}
+
+.result-close:hover {
+    background: var(--surface-600);
+    color: var(--text-primary);
+}
+
+.result-content {
+    padding: var(--space-lg);
+    max-height: 60vh;
+    overflow-y: auto;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+}
+
+.result-content h4 {
+    color: var(--accent-500);
+    margin: var(--space-lg) 0 var(--space-sm) 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.result-content .highlight {
+    color: var(--accent-400);
+    font-weight: 500;
+}
+
+.result-content .amount {
+    color: var(--success);
+    font-weight: 600;
+}
+
+.result-content .hash {
+    color: var(--primary-300);
+    font-size: 0.8rem;
+    word-break: break-all;
 }
