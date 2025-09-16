@@ -25,19 +25,28 @@ const filesToCopy = [
 ];
 
 filesToCopy.forEach(file => {
-    const srcPath = path.join(__dirname, '../', file);
+    const srcPath = path.join(__dirname, '../src/', file);
     const destPath = path.join(distDir, file);
     
     if (fs.existsSync(srcPath)) {
         fs.copyFileSync(srcPath, destPath);
         console.log(`✅ Copied ${file}`);
     } else {
+        // Try fallback to favicon in root
+        if (file === 'favicon.ico') {
+            const rootPath = path.join(__dirname, '../', file);
+            if (fs.existsSync(rootPath)) {
+                fs.copyFileSync(rootPath, destPath);
+                console.log(`✅ Copied ${file} from root`);
+                return;
+            }
+        }
         console.log(`⚠️  File ${file} not found`);
     }
 });
 
 // 处理 app.js - 添加 polyfills
-const appJsPath = path.join(__dirname, '../app.js');
+const appJsPath = path.join(__dirname, '../src/app.js');
 const distAppJsPath = path.join(distDir, 'app.js');
 
 if (fs.existsSync(appJsPath)) {
